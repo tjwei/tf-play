@@ -46,11 +46,13 @@ def tfdot(graph=None):
             #print(name_space, "node", node)
             dot.node(**node)
         for edge in dot_data['edges']:
-            dot.edge(*edge)
+            attr = extra_attr.get(edge, {})
+            dot.edge(*edge, **attr)
         return dot
 
 
     dot_data_dict = defaultdict(lambda :{"subgraphs":set(), "edges":set(), "nodes": []})
+    extra_attr = {}
     if graph is None:
         graph = tf.ops.get_default_graph()
     for op in graph.get_operations():
@@ -63,8 +65,12 @@ def tfdot(graph=None):
         dot_data['nodes'].append(dict(name=op.name,  label=name, style="filled", fillcolor=color))
     
     for op in graph.get_operations():
-        for ip in op.inputs:
+        for i, ip in enumerate(op.inputs):
             name_space = common_name_space(ip.op.name, op.name)
             dot_data = get_dot_data(name_space)
-            dot_data['edges'].add((ip.op.name, op.name))
+            if op.type == 'Assign' and i ==0:
+                dot_data['edges'].add((op.name, ip.op.name))
+                extra_attr[(op.name, ip.op.name)]={'color': 'red'}
+            else:
+                dot_data['edges'].add((ip.op.name, op.name))
     return update_dot()
