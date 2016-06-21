@@ -54,7 +54,7 @@ def tfdot(graph=None):
     dot_data_dict = defaultdict(lambda :{"subgraphs":set(), "edges":set(), "nodes": []})
     extra_attr = {}
     if graph is None:
-        graph = tf.ops.get_default_graph()
+        graph = tf.get_default_graph()
     for op in graph.get_operations():
         if op.type not in color_table:
             new_color = "#%02x%02x%02x"%tuple(randint(0,100)+155 for i in range(3))
